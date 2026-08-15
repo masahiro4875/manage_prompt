@@ -1,13 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from typing import List
 
 from .. import models, schemas
 from ..db import get_db
+from ..image_storage import save_image
 
 router = APIRouter(prefix="/images", tags=["images"])
-
 
 @router.get("/", response_model=List[schemas.ImageOut])
 def get_images(q: str = "", db: Session = Depends(get_db)):
@@ -39,6 +39,14 @@ def create_image(image: schemas.ImageCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_image)
     return db_image
+
+#ファイルアップロード用
+@router.post("/upload")
+async def upload_image(file: UploadFile = File(...)) -> dict[str, str]:
+    contents = await file.read()
+    stored_filename = save_image(contents, file.filename)
+
+    return {"filename": stored_filename}
 
 
 @router.get("/{image_id}", response_model=schemas.ImageOut)
