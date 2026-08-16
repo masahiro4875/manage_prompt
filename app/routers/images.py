@@ -9,6 +9,9 @@ from ..image_storage import save_image
 
 router = APIRouter(prefix="/images", tags=["images"])
 
+MAX_FILESIZE = 20 * 1024 * 1024
+
+
 @router.get("/", response_model=List[schemas.ImageOut])
 def get_images(q: str = "", db: Session = Depends(get_db)):
     query = db.query(models.Image).join(models.Prompt)
@@ -40,11 +43,21 @@ def create_image(image: schemas.ImageCreate, db: Session = Depends(get_db)):
     db.refresh(db_image)
     return db_image
 
-#ファイルアップロード用
+
 @router.post("/upload")
 async def upload_image(file: UploadFile = File(...)) -> dict[str, str]:
-    contents = await file.read()
-    stored_filename = save_image(contents, file.filename)
+    contents = await file.read(MAX_FILESIZE + 1)
+
+    if len(contents) > MAX_FILESIZE:
+        raise HTTPException(
+            status_code=413,
+            detail="File size must be 20 MB or smaller",
+        )
+
+    try:
+        stored_filename = save_image(contents, file.filename)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
 
     return {"filename": stored_filename}
 

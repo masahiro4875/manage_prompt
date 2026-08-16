@@ -1,0 +1,4 @@
+-r app/backend/requirements.txt
+
+# Python 3.9 is used by the current project virtual environment.
+black==25.9.0
