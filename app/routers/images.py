@@ -44,8 +44,8 @@ def create_image(image: schemas.ImageCreate, db: Session = Depends(get_db)):
     return db_image
 
 
-@router.post("/upload")
-async def upload_image(file: UploadFile = File(...)) -> dict[str, str]:
+@router.post("/upload", response_model=schemas.ImageUploadOut)
+async def upload_image(file: UploadFile = File(...)) -> schemas.ImageUploadOut:
     contents = await file.read(MAX_FILESIZE + 1)
 
     if len(contents) > MAX_FILESIZE:
@@ -59,7 +59,10 @@ async def upload_image(file: UploadFile = File(...)) -> dict[str, str]:
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
 
-    return {"filename": stored_filename}
+    return schemas.ImageUploadOut(
+        filename=stored_filename,
+        image_url=f"/uploads/images/{stored_filename}",
+    )
 
 
 @router.get("/{image_id}", response_model=schemas.ImageOut)

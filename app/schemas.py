@@ -34,6 +34,9 @@ class ImageOut(ImageBase):
     class Config:
         from_attributes = True
 
+class ImageUploadOut(BaseModel):
+    filename: str
+    image_url: str
 
 class ParameterBase(BaseModel):
     steps: Optional[int] = None
