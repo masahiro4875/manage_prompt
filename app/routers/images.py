@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from typing import List
@@ -10,7 +11,6 @@ from ..image_storage import save_image
 router = APIRouter(prefix="/images", tags=["images"])
 
 MAX_FILESIZE = 20 * 1024 * 1024
-
 
 @router.get("/", response_model=List[schemas.ImageOut])
 def get_images(q: str = "", db: Session = Depends(get_db)):
