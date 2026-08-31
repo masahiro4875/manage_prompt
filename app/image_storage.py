@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Optional
 from uuid import uuid4
 
-UPLOAD_ROOT=Path(__file__).resolve().parent / "uploads"
+UPLOAD_ROOT = Path(__file__).resolve().parent / "uploads"
 UPLOAD_DIR = UPLOAD_ROOT / "images"
 ALLOWED_SUFFIXES = {".png"}
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"

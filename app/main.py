@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from .routers import images, prompts, tags
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 

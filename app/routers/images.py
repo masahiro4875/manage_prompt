@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
-from fastapi.staticfiles import StaticFiles
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from typing import List

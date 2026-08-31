@@ -15,12 +15,13 @@ class ImageDeliveryTests(unittest.TestCase):
             "app.routers.images.save_image",
             return_value="generated.png",
         ):
-            responce = client.post(
+            response = client.post(
                 "/images/upload",
-                files={"files": ("photo.png", png_contents, "image/png")},
+                file={"files": ("photo.png", png_contents, "image/png")},
             )
-            print(responce.status_code)
-            print(responce.json())
+            self.assertEqual(response.status_code, 200, response.text)
+            self.assertIn("filename", response.json())
+            self.assertIn("image_url", response.json())
 
     def test_uploaded_image_can_be_downloaded(self) -> None:
         pass
