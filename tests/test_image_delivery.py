@@ -17,11 +17,12 @@ class ImageDeliveryTests(unittest.TestCase):
         ):
             response = client.post(
                 "/images/upload",
-                file={"files": ("photo.png", png_contents, "image/png")},
+                files={"file": ("photo.png", png_contents, "image/png")},
             )
-            self.assertEqual(response.status_code, 200, response.text)
-            self.assertIn("filename", response.json())
-            self.assertIn("image_url", response.json())
+
+            data = response.json()
+            self.assertEqual(data["filename"], "generated.png")
+            self.assertEqual(data["image_url"], "/uploads/images/generated.png")
 
     def test_uploaded_image_can_be_downloaded(self) -> None:
         pass
