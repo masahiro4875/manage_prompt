@@ -10,8 +10,4 @@ app = FastAPI()
 app.include_router(images.router)
 app.include_router(prompts.router)
 app.include_router(tags.router)
-app.mount(
-    "/uploads",
-    StaticFiles(directory=UPLOAD_ROOT),
-    name="uploads"
-)
+app.mount("/uploads", StaticFiles(directory=UPLOAD_ROOT), name="uploads")
