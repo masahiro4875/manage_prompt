@@ -4,3 +4,5 @@ __pycache__/
 .env
 app/frontend/node_modules/
 app/frontend/dist/
+app/uploads/images/*
+!app/uploads/images/.gitkeep
