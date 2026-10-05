@@ -5,3 +5,4 @@ __pycache__/
 app/frontend/node_modules/
 app/frontend/dist/
 app/uploads/
+AGENTS.md

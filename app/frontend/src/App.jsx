@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import './App.css'
+
 
 const samples = [
   {
@@ -69,6 +70,54 @@ function App() {
     }
   }
 
+  useEffect(() => {
+    async function fetchPrompts() {
+      try {
+        const response = await fetch('/prompts/')
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch prompts: ${response.status}`)
+        }
+
+        const prompts = await response.json()
+        console.log(prompts)
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    fetchPrompts()
+  }, [])
+
+  async function handleSubmit(event) {
+    event.preventDefault()
+
+    try {
+      const response = await fetch('/prompts/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: title,
+          prompt_text: promptText,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to create prompt: ${response.status}`)
+      }
+
+      const createdPrompt = await response.json()
+      console.log('Created prompt:', createdPrompt)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  const [title, setTitle] = useState('')
+  const [promptText, setPromptText] = useState('')
+
   return (
     <main className="app-shell">
       <header className="top-bar">
@@ -78,6 +127,32 @@ function App() {
         </div>
         <div className="summary-pill">{filteredSamples.length} images</div>
       </header>
+
+      <form onSubmit={handleSubmit}>
+        {/* ここに既存のタイトル・本文の入力欄を入れる */}
+
+        <label>
+          タイトル
+          <input
+            type="text"
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+          />
+        </label>
+
+        <label>
+          プロンプト本文
+          <textarea
+            value={promptText}
+            onChange={(event) => setPromptText(event.target.value)}
+            rows={5}
+          />
+        </label>
+
+        <p>入力した本文：{promptText}</p>
+
+        <button type="submit">Submit</button>
+      </form>
 
       <section className="toolbar" aria-label="Gallery filters">
         <label className="search-field">
