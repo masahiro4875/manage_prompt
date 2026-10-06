@@ -110,13 +110,34 @@ function App() {
 
       const createdPrompt = await response.json()
       console.log('Created prompt:', createdPrompt)
+
+      for (const file of pngFiles) {
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const uploadResponse = await fetch('/images/upload', {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (!uploadResponse.ok) {
+          throw new Error(
+            `Failed to upload ${file.name}: ${uploadResponse.status}`
+          )
+        }
+
+        const uploadedImage = await uploadResponse.json()
+        console.log('Uploaded image:', uploadedImage)
+      }
     } catch (error) {
       console.error(error)
     }
+
   }
 
   const [title, setTitle] = useState('')
   const [promptText, setPromptText] = useState('')
+  const [pngFiles, setPngFiles] = useState([])
 
   return (
     <main className="app-shell">
@@ -152,6 +173,20 @@ function App() {
         <p>入力した本文：{promptText}</p>
 
         <button type="submit">Submit</button>
+
+        <input type="file" accept='.png' multiple onChange={(event) => setPngFiles(Array.from(event.target.files ?? [])
+        )}></input>
+        {pngFiles.length === 0 ? (
+          <p>選択したファイル：未選択</p>
+        ) : (
+          <ul>
+            {pngFiles.map((file, index) => (
+              <li key={`${file.name}-${file.lastModified}-${index}`}>
+                {file.name}
+              </li>
+            ))}
+          </ul>
+        )}
       </form>
 
       <section className="toolbar" aria-label="Gallery filters">
