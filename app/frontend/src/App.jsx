@@ -87,6 +87,21 @@ function App() {
     }
 
     fetchPrompts()
+
+    async function fetchImages() {
+      try {
+        const response = await fetch('/images/')
+        if (!response.ok) {
+          throw new Error(`Failed to fetch images: ${response.status}`)
+        }
+        const images = await response.json()
+        setUploadedImages(images)
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    fetchImages()
   }, [])
 
   async function handleSubmit(event) {
@@ -128,6 +143,21 @@ function App() {
 
         const uploadedImage = await uploadResponse.json()
         console.log('Uploaded image:', uploadedImage)
+
+        const imageResponse = await fetch('/images/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt_id: createdPrompt.id,
+            image_url: uploadedImage.image_url,
+          }),
+        })
+        if (!imageResponse.ok) {
+          throw new Error(`Failed to link image: ${imageResponse.status}`)
+        }
+        const linkedImage = await imageResponse.json()
+        console.log('Linked image:', linkedImage)
+        setUploadedImages((previousImages) => [...previousImages, linkedImage])
       }
     } catch (error) {
       console.error(error)
@@ -138,6 +168,7 @@ function App() {
   const [title, setTitle] = useState('')
   const [promptText, setPromptText] = useState('')
   const [pngFiles, setPngFiles] = useState([])
+  const [uploadedImages, setUploadedImages] = useState([])
 
   return (
     <main className="app-shell">
@@ -188,6 +219,17 @@ function App() {
           </ul>
         )}
       </form>
+
+      <div>
+        {uploadedImages.map((image) => (
+          <img
+            key={image.id}
+            src={image.image_url}
+            alt="アップロードした画像"
+            style={{ maxWidth: '300px' }}
+          />
+        ))}
+      </div>
 
       <section className="toolbar" aria-label="Gallery filters">
         <label className="search-field">
