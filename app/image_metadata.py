@@ -58,7 +58,28 @@ def extract_character_prompt(input_path: Path):
         return prompts
 
 
+def extract_prompts(input_path: Path):
+
+    with Image.open(input_path) as image:
+        comment = image.info["Comment"]
+        data = json.loads(comment)
+        characters = data["v4_prompt"]["caption"]["char_captions"]
+
+        base_prompt = data["v4_prompt"]["caption"]["base_caption"]
+        negative_prompt=data["v4_negative_prompt"]["caption"]["base_caption"]
+
+        character_prompts: list[str] = []
+
+        for character in characters:
+            character_prompts.append(character["char_caption"])
+
+        return {
+            "prompt_text": base_prompt,
+            "negative_prompt": negative_prompt,
+            "character_prompts": character_prompts,
+        }
+
 if __name__ == "__main__":
     input_path = Path("uploads/images/test.png")
 
-    print(extract_character_prompt(input_path))
+    print(extract_prompts(input_path))
