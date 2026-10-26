@@ -115,7 +115,7 @@ function App() {
         },
         body: JSON.stringify({
           title: title,
-          prompt_text: promptText,
+          base_prompt: promptText,
         }),
       })
 

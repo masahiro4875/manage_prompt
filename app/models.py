@@ -9,7 +9,7 @@ from sqlalchemy import (
     Text,
     TIMESTAMP,
 )
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import uuid
@@ -36,10 +36,11 @@ class Prompt(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title = Column(Text)
-    prompt_text = Column(Text, nullable=False)
-    negative_prompt = Column(Text)
+    base_prompt = Column(Text, nullable=False)
+    base_negative_prompt = Column(Text)
     memo = Column(Text)
     is_favorite = Column(Boolean, default=False)
+    character_prompts = Column(JSONB, nullable=False, default=list, server_default="[]")
 
     created_at = Column(TIMESTAMP, server_default=func.now())
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
@@ -95,4 +96,3 @@ class Parameter(Base):
     seed = Column(BigInteger)
 
     prompt = relationship("Prompt", back_populates="parameters")
-

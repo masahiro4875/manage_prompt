@@ -58,8 +58,8 @@ def get_prompts(q: str = "", db: Session = Depends(get_db)):
         query = query.filter(
             or_(
                 models.Prompt.title.ilike(pattern),
-                models.Prompt.prompt_text.ilike(pattern),
-                models.Prompt.negative_prompt.ilike(pattern),
+                models.Prompt.base_prompt.ilike(pattern),
+                models.Prompt.base_negative_prompt.ilike(pattern),
                 models.Prompt.memo.ilike(pattern),
                 models.Prompt.tags.any(models.Tag.name.ilike(pattern)),
             )

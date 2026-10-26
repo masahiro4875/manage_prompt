@@ -1,12 +1,13 @@
 import json
 
 from pathlib import Path
+from io import BytesIO
 
 from PIL import Image
 from PIL.PngImagePlugin import PngInfo
 
 
-def inspect_metadata(input_path: Path):
+def inspect_metadata(input_path: Path) -> None:
     with Image.open(input_path) as image:
         metadata = PngInfo()
 
@@ -26,7 +27,7 @@ def inspect_metadata(input_path: Path):
                     print(f"Character {index}:", character_prompt)
 
 
-def extract_base_prompt(input_path: Path):
+def extract_base_prompt(input_path: Path) -> str:
     with Image.open(input_path) as image:
         comment = image.info["Comment"]
         data = json.loads(comment)
@@ -34,7 +35,7 @@ def extract_base_prompt(input_path: Path):
         return data["v4_prompt"]["caption"]["base_caption"]
 
 
-def extract_negative_prompt(input_path: Path):
+def extract_negative_prompt(input_path: Path) -> str:
 
     with Image.open(input_path) as image:
         comment = image.info["Comment"]
@@ -43,7 +44,7 @@ def extract_negative_prompt(input_path: Path):
         return data["v4_negative_prompt"]["caption"]["base_caption"]
 
 
-def extract_character_prompt(input_path: Path):
+def extract_character_prompt(input_path: Path) -> list[str]:
 
     with Image.open(input_path) as image:
         comment = image.info["Comment"]
@@ -58,15 +59,15 @@ def extract_character_prompt(input_path: Path):
         return prompts
 
 
-def extract_prompts(input_path: Path):
 
-    with Image.open(input_path) as image:
+def extract_prompts_from_bytes(contents: bytes) -> dict[str, object]:
+    with Image.open(BytesIO(contents)) as image:
         comment = image.info["Comment"]
         data = json.loads(comment)
         characters = data["v4_prompt"]["caption"]["char_captions"]
 
         base_prompt = data["v4_prompt"]["caption"]["base_caption"]
-        negative_prompt=data["v4_negative_prompt"]["caption"]["base_caption"]
+        negative_prompt = data["v4_negative_prompt"]["caption"]["base_caption"]
 
         character_prompts: list[str] = []
 
@@ -74,12 +75,20 @@ def extract_prompts(input_path: Path):
             character_prompts.append(character["char_caption"])
 
         return {
-            "prompt_text": base_prompt,
-            "negative_prompt": negative_prompt,
+            "base_prompt": base_prompt,
+            "base_negative_prompt": negative_prompt,
             "character_prompts": character_prompts,
         }
 
+def extract_prompts(input_path: Path) -> dict[str, object]:
+    return extract_prompts_from_bytes(input_path.read_bytes())
+
+
 if __name__ == "__main__":
     input_path = Path("uploads/images/test.png")
+    contents = input_path.read_bytes()
 
-    print(extract_prompts(input_path))
+    expected = extract_prompts(input_path)
+    actual = extract_prompts_from_bytes(contents)
+
+    assert expected == actual

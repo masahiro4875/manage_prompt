@@ -63,10 +63,11 @@ class ParameterOut(ParameterBase):
 
 class PromptBase(BaseModel):
     title: Optional[str] = None
-    prompt_text: str
-    negative_prompt: Optional[str] = None
+    base_prompt: str
+    base_negative_prompt: Optional[str] = None
     memo: Optional[str] = None
     is_favorite: Optional[bool] = False
+    character_prompts: List[str] = Field(default_factory=list)
 
 
 class PromptCreate(PromptBase):
@@ -76,12 +77,13 @@ class PromptCreate(PromptBase):
 
 class PromptUpdate(BaseModel):
     title: Optional[str] = None
-    prompt_text: Optional[str] = None
-    negative_prompt: Optional[str] = None
+    base_prompt: Optional[str] = None
+    base_negative_prompt: Optional[str] = None
     memo: Optional[str] = None
     is_favorite: Optional[bool] = None
     tag_names: Optional[List[str]] = None
     parameters: Optional[ParameterUpdate] = None
+    character_prompts: Optional[List[str]] = None
 
 
 class PromptOut(PromptBase):
