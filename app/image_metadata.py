@@ -59,26 +59,68 @@ def extract_character_prompt(input_path: Path) -> list[str]:
         return prompts
 
 
-
 def extract_prompts_from_bytes(contents: bytes) -> dict[str, object]:
     with Image.open(BytesIO(contents)) as image:
-        comment = image.info["Comment"]
-        data = json.loads(comment)
-        characters = data["v4_prompt"]["caption"]["char_captions"]
+        comment = image.info.get("Comment")
 
-        base_prompt = data["v4_prompt"]["caption"]["base_caption"]
-        negative_prompt = data["v4_negative_prompt"]["caption"]["base_caption"]
+        # Commentがない時の処理
+        if not isinstance(comment, str) or not comment.strip():
+            raise ValueError("PNG does not contain prompt metadata.")
+
+        try:
+            data = json.loads(comment)
+        except json.JSONDecodeError as error:
+            raise ValueError("Prompt metadata contains invalid JSON.") from error
+
+        if not isinstance(data, dict):
+            raise ValueError("Prompt metadata must be a JSON object.")
+
+        # base_promptのチェック兼変数格納
+        try:
+            caption = data["v4_prompt"]["caption"]
+            base_prompt = caption["base_caption"]
+        except (KeyError, TypeError) as error:
+            raise ValueError("Prompt metadata has an invalid structure.") from error
+
+        if not isinstance(base_prompt, str) or not base_prompt.strip():
+            raise ValueError("Base prompt must be a non-empty string.")
+
+        try:
+            negative_caption = data["v4_negative_prompt"]["caption"]
+            negative_prompt = negative_caption["base_caption"]
+        except (KeyError, TypeError) as error:
+            raise ValueError("Prompt metadata has an invalid structure.") from error
+
+        if not isinstance(negative_prompt, str):
+            raise ValueError("Negative prompt must be a string.")
+
+        try:
+            characters = caption["char_captions"]
+        except (KeyError, TypeError) as error:
+            raise ValueError("Character metadata has an invalid structure") from error
+
+        if not isinstance(characters, list):
+            raise ValueError("Character prompts must be a list")
 
         character_prompts: list[str] = []
 
         for character in characters:
-            character_prompts.append(character["char_caption"])
+            if not isinstance(character, dict):
+                raise ValueError("Each character must be a JSON object.")
+
+            character_prompt = character.get("char_caption")
+
+            if not isinstance(character_prompt, str):
+                raise ValueError("Character prompt must be a string.")
+
+            character_prompts.append(character_prompt)
 
         return {
             "base_prompt": base_prompt,
             "base_negative_prompt": negative_prompt,
             "character_prompts": character_prompts,
         }
+
 
 def extract_prompts(input_path: Path) -> dict[str, object]:
     return extract_prompts_from_bytes(input_path.read_bytes())
@@ -88,7 +130,4 @@ if __name__ == "__main__":
     input_path = Path("uploads/images/test.png")
     contents = input_path.read_bytes()
 
-    expected = extract_prompts(input_path)
-    actual = extract_prompts_from_bytes(contents)
-
-    assert expected == actual
+    print(extract_prompts_from_bytes(contents))
